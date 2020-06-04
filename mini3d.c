@@ -12,7 +12,7 @@
 //   2008.3.15  skywind  fixed a trapezoid issue
 //   2015.8.09  skywind  rewrite with more comment
 //   2015.8.12  skywind  adjust interfaces for clearity 
-// 
+//  http://www.skywind.me/blog/archives/1498 配套教程
 //=====================================================================
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,10 +27,11 @@ typedef unsigned int IUINT32;
 //=====================================================================
 // 数学库：此部分应该不用详解，熟悉 D3D 矩阵变换即可
 //=====================================================================
-typedef struct { float m[4][4]; } matrix_t;
+typedef struct { float m[4][4]; } matrix_t; //4*4的矩阵
 typedef struct { float x, y, z, w; } vector_t;
 typedef vector_t point_t;
 
+//约束x的范围
 int CMID(int x, int min, int max) { return (x < min)? min : ((x > max)? max : x); }
 
 // 计算插值：t 为 [0, 1] 之间的数值
@@ -38,8 +39,8 @@ float interp(float x1, float x2, float t) { return x1 + (x2 - x1) * t; }
 
 // | v |
 float vector_length(const vector_t *v) {
-	float sq = v->x * v->x + v->y * v->y + v->z * v->z;
-	return (float)sqrt(sq);
+	float sq = v->x * v->x + v->y * v->y + v->z * v->z; //先平方
+	return (float)sqrt(sq); //在求平方根
 }
 
 // z = x + y
@@ -58,12 +59,12 @@ void vector_sub(vector_t *z, const vector_t *x, const vector_t *y) {
 	z->w = 1.0;
 }
 
-// 矢量点乘
+// 矢量点乘 对应的值相乘然后相加
 float vector_dotproduct(const vector_t *x, const vector_t *y) {
 	return x->x * y->x + x->y * y->y + x->z * y->z;
 }
 
-// 矢量叉乘
+// 矢量叉乘 
 void vector_crossproduct(vector_t *z, const vector_t *x, const vector_t *y) {
 	float m1, m2, m3;
 	m1 = x->y * y->z - x->z * y->y;
@@ -94,7 +95,7 @@ void vector_normalize(vector_t *v) {
 	}
 }
 
-// c = a + b
+// c = a + b 对应的值相加
 void matrix_add(matrix_t *c, const matrix_t *a, const matrix_t *b) {
 	int i, j;
 	for (i = 0; i < 4; i++) {
@@ -103,7 +104,7 @@ void matrix_add(matrix_t *c, const matrix_t *a, const matrix_t *b) {
 	}
 }
 
-// c = a - b
+// c = a - b 对应的值相减
 void matrix_sub(matrix_t *c, const matrix_t *a, const matrix_t *b) {
 	int i, j;
 	for (i = 0; i < 4; i++) {
@@ -127,7 +128,7 @@ void matrix_mul(matrix_t *c, const matrix_t *a, const matrix_t *b) {
 	c[0] = z;
 }
 
-// c = a * f
+// c = a * f 对应的值*f
 void matrix_scale(matrix_t *c, const matrix_t *a, float f) {
 	int i, j;
 	for (i = 0; i < 4; i++) {
@@ -145,6 +146,7 @@ void matrix_apply(vector_t *y, const vector_t *x, const matrix_t *m) {
 	y->w = X * m->m[0][3] + Y * m->m[1][3] + Z * m->m[2][3] + W * m->m[3][3];
 }
 
+//单位矩阵
 void matrix_set_identity(matrix_t *m) {
 	m->m[0][0] = m->m[1][1] = m->m[2][2] = m->m[3][3] = 1.0f; 
 	m->m[0][1] = m->m[0][2] = m->m[0][3] = 0.0f;
@@ -153,6 +155,7 @@ void matrix_set_identity(matrix_t *m) {
 	m->m[3][0] = m->m[3][1] = m->m[3][2] = 0.0f;
 }
 
+//0矩阵
 void matrix_set_zero(matrix_t *m) {
 	m->m[0][0] = m->m[0][1] = m->m[0][2] = m->m[0][3] = 0.0f;
 	m->m[1][0] = m->m[1][1] = m->m[1][2] = m->m[1][3] = 0.0f;
@@ -160,15 +163,15 @@ void matrix_set_zero(matrix_t *m) {
 	m->m[3][0] = m->m[3][1] = m->m[3][2] = m->m[3][3] = 0.0f;
 }
 
-// 平移变换
+// 平移变换 最下面的一排设置成对应的值？
 void matrix_set_translate(matrix_t *m, float x, float y, float z) {
-	matrix_set_identity(m);
+	matrix_set_identity(m); //变成单位矩阵
 	m->m[3][0] = x;
 	m->m[3][1] = y;
 	m->m[3][2] = z;
 }
 
-// 缩放变换
+// 缩放变换 变成单位矩阵然后斜对角依次变成缩放的值
 void matrix_set_scale(matrix_t *m, float x, float y, float z) {
 	matrix_set_identity(m);
 	m->m[0][0] = x;
@@ -176,7 +179,7 @@ void matrix_set_scale(matrix_t *m, float x, float y, float z) {
 	m->m[2][2] = z;
 }
 
-// 旋转矩阵
+// 旋转矩阵 
 void matrix_set_rotate(matrix_t *m, float x, float y, float z, float theta) {
 	float qsin = (float)sin(theta * 0.5f);
 	float qcos = (float)cos(theta * 0.5f);

@@ -1,0 +1,3 @@
+﻿  mini3d.c
+d:\study\github\mini3d\mini3d.c : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+  Mini3D.vcxproj -> D:\Study\github\mini3d\Debug\Mini3D.exe
